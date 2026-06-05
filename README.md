@@ -13,7 +13,6 @@ Aplicativo Android para acompanhar a Copa do Mundo FIFA 2026. Desenvolvido 100% 
 - **Notificações** — WorkManager 5 minutos antes do início com bandeiras emoji
 - **Pênaltis** — diálogo de desempate para mata-mata empatado
 - **Navegação por swipe** — HorizontalPager entre fases eliminatórias
-- **Identidade visual FIFA** — fontes, cores e padrões geométricos oficiais
 
 ## Tecnologias
 
