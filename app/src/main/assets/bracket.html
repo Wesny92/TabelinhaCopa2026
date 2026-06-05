@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>COPA DO MUNDO 2026 — Chaveamento</title>
+  <script src="react.min.js"></script>
+  <script src="react-dom.min.js"></script>
+  <script src="babel.min.js"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background: #04091a; color: #9fb3d4; font-family: 'Segoe UI',sans-serif; overflow-x: hidden; }
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@300;400;600&display=swap');
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.03)} }
+    ::-webkit-scrollbar{height:5px;width:5px;background:#040810}
+    ::-webkit-scrollbar-thumb{background:#0d1a30;border-radius:3px}
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" data-presets="react">
+    const { useState } = React;
+
+    const FLAGS = {
+      "México":"🇲🇽","Coreia do Sul":"🇰🇷","África do Sul":"🇿🇦","República Tcheca":"🇨🇿","Rep. Tcheca":"🇨🇿",
+      "Canadá":"🇨🇦","Suíça":"🇨🇭","Catar":"🇶🇦","Bósnia e Herzegovina":"🇧🇦","Bósnia e Herz.":"🇧🇦",
+      "Brasil":"🇧🇷","Marrocos":"🇲🇦","Escócia":"🏴󠁧󠁢󠁳󠁣󠁴󠁿","Haiti":"🇭🇹",
+      "EUA":"🇺🇸","Estados Unidos":"🇺🇸","Austrália":"🇦🇺","Paraguai":"🇵🇾","Turquia":"🇹🇷",
+      "Alemanha":"🇩🇪","Equador":"🇪🇨","Costa do Marfim":"🇨🇮","Curaçao":"🇨🇼","Curaçau":"🇨🇼",
+      "Holanda":"🇳🇱","Países Baixos":"🇳🇱","Japão":"🇯🇵","Suécia":"🇸🇪","Tunísia":"🇹🇳",
+      "Bélgica":"🇧🇪","Irã":"🇮🇷","Egito":"🇪🇬","Nova Zelândia":"🇳🇿",
+      "Espanha":"🇪🇸","Uruguai":"🇺🇾","Arábia Saudita":"🇸🇦","Cabo Verde":"🇨🇻",
+      "França":"🇫🇷","Senegal":"🇸🇳","Noruega":"🇳🇴","Iraque":"🇮🇶",
+      "Argentina":"🇦🇷","Áustria":"🇦🇹","Argélia":"🇩🇿","Jordânia":"🇯🇴",
+      "Portugal":"🇵🇹","Colômbia":"🇨🇴","Uzbequistão":"🇺🇿","RD Congo":"🇨🇩",
+      "Inglaterra":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","Croácia":"🇭🇷","Panamá":"🇵🇦","Gana":"🇬🇭",
+      // Names without accents (from database)
+      "Africa do Sul":"🇿🇦","Republica Tcheca":"🇨🇿","Bosnia e Herzegovina":"🇧🇦",
+      "Curacao":"🇨🇼","Paises Baixos":"🇳🇱","Estados Unidos":"🇺🇸",
+      "Belgica":"🇧🇪","Ira":"🇮🇷","Nova Zelandia":"🇳🇿",
+      "Arabia Saudita":"🇸🇦","Franca":"🇫🇷","Austria":"🇦🇹",
+      "Argelia":"🇩🇿","Jordania":"🇯🇴","Colombia":"🇨🇴",
+      "Uzbequistao":"🇺🇿","Croacia":"🇭🇷","Panama":"🇵🇦",
+      "Coreia do Sul":"🇰🇷","Catar":"🇶🇦","Senegal":"🇸🇳",
+      "Japao":"🇯🇵","Suecia":"🇸🇪","Tunisia":"🇹🇳",
+      "Alemanha":"🇩🇪","Inglaterra":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","Escocia":"🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+      "Mexico":"🇲🇽","Canada":"🇨🇦","Suica":"🇨🇭","Australia":"🇦🇺",
+    };
+    function f(t) { return FLAGS[t] || "⚽"; }
+
+    const SLOT_W = 148, SLOT_H = 26, GAP = 4;
+    const R32_PITCH = 80;
+    const R16_PITCH = R32_PITCH * 2;
+    const QF_PITCH = R16_PITCH * 2;
+    const SF_PITCH = QF_PITCH * 2;
+    const OFF = 34;
+    const MATCH_H = SLOT_H * 2 + GAP + 2;
+    const CONN = 22;
+
+    function Slot({ team, winner, onClick, right }) {
+      const tbd = !team || team === "TBD";
+      const isW = !tbd && winner === team;
+      return (
+        <div onClick={!tbd ? onClick : undefined} style={{
+          width: SLOT_W, height: SLOT_H, display: "flex", alignItems: "center", gap: 5,
+          padding: "0 7px", flexDirection: right ? "row-reverse" : "row",
+          background: isW ? "linear-gradient(90deg,#f1c40f18,#f1c40f30)" : "rgba(255,255,255,0.03)",
+          borderLeft: (!right && isW) ? "2px solid #f1c40f" : (!right ? "2px solid transparent" : "none"),
+          borderRight: (right && isW) ? "2px solid #f1c40f" : (right ? "2px solid transparent" : "none"),
+          borderRadius: 3, cursor: tbd ? "default" : "pointer", transition: "background 0.12s",
+          userSelect: "none", boxSizing: "border-box",
+        }}>
+          {!tbd && <span style={{ fontSize: 13, lineHeight: 1 }}>{f(team)}</span>}
+          <span style={{ fontSize: 10.5, fontFamily: "'Oswald','Bebas Neue',sans-serif",
+            color: isW ? "#f1c40f" : tbd ? "#2a3a5a" : "#9fb3d4", letterSpacing: 0.5,
+            whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flex: 1,
+            textAlign: right ? "right" : "left" }}>
+            {tbd ? "A definir" : team}
+          </span>
+        </div>
+      );
+    }
+
+    function Match({ teamA, teamB, winner, onPick, right, label }) {
+      const tbd = (!teamA || teamA === "TBD") && (!teamB || teamB === "TBD");
+      return (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: right ? "flex-end" : "flex-start" }}>
+          {label && <div style={{ fontSize: 7, color: "#2e4268", letterSpacing: 1.2,
+            fontFamily: "'Oswald',sans-serif", marginBottom: 2,
+            textAlign: right ? "right" : "left", width: SLOT_W }}>{label}</div>}
+          <div style={{ background: "rgba(8,16,36,0.92)", border: "1px solid rgba(60,90,150,0.22)",
+            borderRadius: 6, overflow: "hidden", width: SLOT_W, boxShadow: "0 2px 12px rgba(0,0,0,0.35)" }}>
+            <Slot team={teamA} winner={winner} right={right}
+              onClick={() => !tbd && onPick && teamA && teamA !== "TBD" && onPick(teamA)} />
+            <div style={{ height: 1, background: "rgba(60,90,150,0.18)" }} />
+            <Slot team={teamB} winner={winner} right={right}
+              onClick={() => !tbd && onPick && teamB && teamB !== "TBD" && onPick(teamB)} />
+          </div>
+        </div>
+      );
+    }
+
+    function Conn({ fromCount, fromPitch, offsetY, w, right }) {
+      const lines = [];
+      for (let i = 0; i < fromCount; i += 2) {
+        const cy1 = offsetY + i * fromPitch + fromPitch / 2;
+        const cy2 = offsetY + (i+1) * fromPitch + fromPitch / 2;
+        const midY = (cy1 + cy2) / 2;
+        const x0 = right ? w : 0;
+        const xm = w / 2;
+        const x1 = right ? 0 : w;
+        lines.push(
+          <line key={`a${i}`} x1={x0} y1={cy1} x2={xm} y2={cy1} stroke="#142040" strokeWidth={1}/>,
+          <line key={`b${i}`} x1={x0} y1={cy2} x2={xm} y2={cy2} stroke="#142040" strokeWidth={1}/>,
+          <line key={`c${i}`} x1={xm} y1={cy1} x2={xm} y2={cy2} stroke="#142040" strokeWidth={1}/>,
+          <line key={`d${i}`} x1={xm} y1={midY} x2={x1} y2={midY} stroke="#142040" strokeWidth={1}/>,
+        );
+      }
+      return (
+        <svg style={{ position:"absolute", top:0, left:0, width:w, height:"100%", pointerEvents:"none" }}
+          width={w} height="100%">{lines}</svg>
+      );
+    }
+
+    function BracketHalf({ r32Seeds, r32W, setR32W, r16In, r16W, setR16W,
+      qfIn, qfW, setQfW, sfIn, sfW, setSfW, r32Labels, r16Labels, qfLabels, sfLabel, right }) {
+      const H = 8 * R32_PITCH + OFF * 2;
+      const sfTop = OFF + (SF_PITCH - MATCH_H) / 2;
+
+      function colMatches(pairs, winners, onPicks, pitch, labels) {
+        return pairs.map(([a,b], i) => {
+          const top = OFF + i * pitch + (pitch - MATCH_H) / 2;
+          return (
+            <div key={i} style={{ position:"absolute", top, [right?"right":"left"]:0 }}>
+              <Match teamA={a} teamB={b} winner={winners[i]} right={right}
+                label={labels?.[i]} onPick={(t) => onPicks(i, t)} />
+            </div>
+          );
+        });
+      }
+
+      const dir = right ? "row-reverse" : "row";
+
+      return (
+        <div style={{ display:"flex", flexDirection:dir, alignItems:"flex-start", position:"relative" }}>
+          <div style={{ position:"relative", width:SLOT_W, height:H }}>
+            {colMatches(r32Seeds.map(([a,b])=>[a,b]), r32W, setR32W, R32_PITCH, r32Labels)}
+          </div>
+          <div style={{ position:"relative", width:CONN, height:H, flexShrink:0 }}>
+            <Conn fromCount={8} fromPitch={R32_PITCH} offsetY={OFF} w={CONN} right={right}/>
+          </div>
+          <div style={{ position:"relative", width:SLOT_W, height:H }}>
+            {colMatches(r16In, r16W, setR16W, R16_PITCH, r16Labels)}
+          </div>
+          <div style={{ position:"relative", width:CONN, height:H, flexShrink:0 }}>
+            <Conn fromCount={4} fromPitch={R16_PITCH} offsetY={OFF} w={CONN} right={right}/>
+          </div>
+          <div style={{ position:"relative", width:SLOT_W, height:H }}>
+            {colMatches(qfIn, qfW, setQfW, QF_PITCH, qfLabels)}
+          </div>
+          <div style={{ position:"relative", width:CONN, height:H, flexShrink:0 }}>
+            <Conn fromCount={2} fromPitch={QF_PITCH} offsetY={OFF} w={CONN} right={right}/>
+          </div>
+          <div style={{ position:"relative", width:SLOT_W, height:H }}>
+            <div style={{ position:"absolute", top:sfTop, [right?"right":"left"]:0 }}>
+              <Match teamA={sfIn[0]} teamB={sfIn[1]} winner={sfW} right={right}
+                label={sfLabel} onPick={(t) => setSfW(t)} />
+            </div>
+          </div>
+          <div style={{ position:"relative", width:CONN, height:H, flexShrink:0 }}>
+            <svg style={{ position:"absolute", top:0, left:0, width:CONN, height:"100%", pointerEvents:"none" }}
+              width={CONN} height="100%">
+              <line x1={right?CONN:0} y1={OFF+SF_PITCH/2} x2={right?0:CONN} y2={OFF+SF_PITCH/2} stroke="#142040" strokeWidth={1}/>
+            </svg>
+          </div>
+        </div>
+      );
+    }
+
+    const INIT_R32 = Array.from({length:16}, () => ["TBD","TBD"]);
+    const R32_LABELS_L = ["Round of 32 · Jun 28 · Los Angeles","Round of 32 · Jun 29 · Boston",
+      "Round of 32 · Jun 30 · Monterrey","Round of 32 · Jun 29 · Houston","Round of 32 · Jun 30 · Nova York",
+      "Round of 32 · Jun 30 · Dallas","Round of 32 · Jul 1 · Cidade do México","Round of 32 · Jul 1 · Atlanta"];
+    const R32_LABELS_R = ["Round of 32 · Jul 2 · São Francisco","Round of 32 · Jul 3 · Dallas",
+      "Round of 32 · Jul 2 · Toronto","Round of 32 · Jul 4 · Seattle","Round of 32 · Jul 3 · Vancouver",
+      "Round of 32 · Jul 4 · Atlanta","Round of 32 · Jul 4 · Kansas City","Round of 32 · Jul 5 · Vancouver"];
+    const R16_LABELS_L = ["Oitavas · Jul 4 · Philadelphia","Oitavas · Jul 5 · Houston",
+      "Oitavas · Jul 5 · Nova York","Oitavas · Jul 6 · México"];
+    const R16_LABELS_R = ["Oitavas · Jul 6 · Dallas","Oitavas · Jul 7 · Seattle",
+      "Oitavas · Jul 7 · Miami","Oitavas · Jul 8 · Vancouver"];
+    const QF_LABELS_L = ["Quartas · Jul 9 · Boston","Quartas · Jul 10 · Los Angeles"];
+    const QF_LABELS_R = ["Quartas · Jul 11 · Miami","Quartas · Jul 12 · Kansas City"];
+
+    function App() {
+      const [r32L,setR32L]=useState(Array(8).fill(null)); const [r32R,setR32R]=useState(Array(8).fill(null));
+      const [r16L,setR16L]=useState(Array(4).fill(null)); const [r16R,setR16R]=useState(Array(4).fill(null));
+      const [qfL,setQfL]=useState(Array(2).fill(null));    const [qfR,setQfR]=useState(Array(2).fill(null));
+      const [sfL,setSfL]=useState(null); const [sfR,setSfR]=useState(null);
+      const [champ,setChamp]=useState(null); const [third,setThird]=useState(null);
+
+      function pick(arr,setArr,i,team,clearFn){const n=[...arr];n[i]=n[i]===team?null:team;setArr(n);clearFn();}
+      function clr16L(){setR16L(Array(4).fill(null));clrQFL();} function clr16R(){setR16R(Array(4).fill(null));clrQFR();}
+      function clrQFL(){setQfL(Array(2).fill(null));clrSFL();}  function clrQFR(){setQfR(Array(2).fill(null));clrSFR();}
+      function clrSFL(){setSfL(null);clrFin();} function clrSFR(){setSfR(null);clrFin();}
+      function clrFin(){setChamp(null);setThird(null);}
+      function reset(){setR32L(Array(8).fill(null));setR32R(Array(8).fill(null));
+        setR16L(Array(4).fill(null));setR16R(Array(4).fill(null));
+        setQfL(Array(2).fill(null));setQfR(Array(2).fill(null));setSfL(null);setSfR(null);setChamp(null);setThird(null);}
+
+      const r16In_L=[[r32L[0]||"TBD",r32L[1]||"TBD"],[r32L[2]||"TBD",r32L[3]||"TBD"],[r32L[4]||"TBD",r32L[5]||"TBD"],[r32L[6]||"TBD",r32L[7]||"TBD"]];
+      const r16In_R=[[r32R[0]||"TBD",r32R[1]||"TBD"],[r32R[2]||"TBD",r32R[3]||"TBD"],[r32R[4]||"TBD",r32R[5]||"TBD"],[r32R[6]||"TBD",r32R[7]||"TBD"]];
+      const qfIn_L=[[r16L[0]||"TBD",r16L[1]||"TBD"],[r16L[2]||"TBD",r16L[3]||"TBD"]];
+      const qfIn_R=[[r16R[0]||"TBD",r16R[1]||"TBD"],[r16R[2]||"TBD",r16R[3]||"TBD"]];
+      const sfLt=[qfL[0]||"TBD",qfL[1]||"TBD"]; const sfRt=[qfR[0]||"TBD",qfR[1]||"TBD"];
+      const finA=sfL||"TBD"; const finB=sfR||"TBD";
+
+      return (
+        <div style={{minHeight:"100vh",background:"linear-gradient(160deg,#f1c40f 0%,#d4a017 15%,#27ae60 50%,#2ecc71 100%)",fontFamily:"'Segoe UI',sans-serif",overflowX:"auto",paddingBottom:48}}>
+          <div style={{background:"linear-gradient(90deg,#040c1e,#081428,#040c1e)",borderBottom:"2px solid rgba(241,196,15,0.35)",padding:"14px 32px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:200}}>
+            <div>
+              <div style={{fontFamily:"'Bebas Neue','Oswald',sans-serif",fontSize:26,color:"#f1c40f",letterSpacing:4}}>⚽ COPA DO MUNDO 2026</div>
+              <div style={{fontSize:10,color:"#3a5070",letterSpacing:2}}>CHAVEAMENTO COMPLETO · EUA · MÉXICO · CANADÁ · 11 JUN – 19 JUL</div>
+            </div>
+            <div style={{display:"flex",gap:12,alignItems:"center"}}>
+              {champ && <div style={{background:"linear-gradient(90deg,#f1c40f18,#f1c40f30)",border:"1px solid #f1c40f66",borderRadius:8,padding:"6px 14px",textAlign:"center"}}>
+                <div style={{fontSize:8,color:"#f1c40f88",fontFamily:"'Oswald',sans-serif",letterSpacing:2}}>CAMPEÃO</div>
+                <div style={{fontSize:16,color:"#f1c40f",fontFamily:"'Bebas Neue',sans-serif",letterSpacing:1}}>{FLAGS[champ]||"⚽"} {champ}</div>
+              </div>}
+            </div>
+          </div>
+          <div style={{display:"flex",justifyContent:"center",gap:0,padding:"10px 20px 0",overflowX:"auto"}}>
+            {["ROUND OF 32","OITAVAS","QUARTAS","SEMI","FINAL","SEMI","QUARTAS","OITAVAS","ROUND OF 32"].map((s,i)=>(
+              <div key={i} style={{flex:s==="FINAL"?"0 0 220px":s.includes("32")?"0 0 170px":s.includes("OITAVAS")?"0 0 170px":"0 0 170px",textAlign:"center",fontFamily:"'Oswald','Bebas Neue',sans-serif",fontSize:s==="FINAL"?13:10,color:s==="FINAL"?"#f1c40f88":"#1e3050",letterSpacing:2,borderBottom:s==="FINAL"?"1px solid #f1c40f33":"1px solid #0d1a30",paddingBottom:4}}>{s}</div>
+            ))}
+          </div>
+          <div style={{overflowX:"auto",padding:"0 20px"}}>
+            <div style={{display:"flex",justifyContent:"center",alignItems:"flex-start",gap:0,minWidth:1300,paddingTop:16,position:"relative"}}>
+              <BracketHalf r32Seeds={INIT_R32.slice(0,8)} r32W={r32L} setR32W={(i,t)=>pick(r32L,setR32L,i,t,clr16L)}
+                r16In={r16In_L} r16W={r16L} setR16W={(i,t)=>pick(r16L,setR16L,i,t,clrQFL)}
+                qfIn={qfIn_L} qfW={qfL} setQfW={(i,t)=>pick(qfL,setQfL,i,t,clrSFL)}
+                sfIn={sfLt} sfW={sfL} setSfW={(t)=>{setSfL(prev=>prev===t?null:t);clrFin();}}
+                r32Labels={R32_LABELS_L} r16Labels={R16_LABELS_L} qfLabels={QF_LABELS_L}
+                sfLabel="Semi · Jul 14 · Dallas" right={false}/>
+              <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minWidth:220,paddingTop:8}}>
+                <div style={{marginTop:R32_PITCH*3+OFF-10,background:"linear-gradient(135deg,rgba(241,196,15,0.07),rgba(241,196,15,0.02))",border:"2px solid rgba(241,196,15,0.35)",borderRadius:12,padding:"10px 14px",boxShadow:"0 0 40px rgba(241,196,15,0.08)",textAlign:"center"}}>
+                  <div style={{fontSize:10,color:"#f1c40f66",fontFamily:"'Oswald',sans-serif",letterSpacing:2,marginBottom:4}}>🏆 FINAL</div>
+                  <div style={{fontSize:8,color:"#1e3050",marginBottom:6}}>Jul 19 · MetLife Stadium · NJ</div>
+                  <Match teamA={finA} teamB={finB} winner={champ} onPick={(t)=>setChamp(prev=>prev===t?null:t)} right={false}/>
+                  {champ && <div style={{marginTop:10}}><div style={{fontSize:28}}>🏆</div>
+                    <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,color:"#f1c40f",letterSpacing:2}}>{FLAGS[champ]||"⚽"} {champ}</div>
+                    <div style={{fontSize:9,color:"#f1c40f66",letterSpacing:1}}>CAMPEÃO DO MUNDO</div></div>}
+                </div>
+                <div style={{marginTop:32,textAlign:"center"}}>
+                  <div style={{fontSize:9,color:"#2a3a5a",fontFamily:"'Oswald',sans-serif",letterSpacing:2,marginBottom:4}}>🥉 3° LUGAR</div>
+                  <div style={{fontSize:7.5,color:"#1a2a40",marginBottom:5}}>Jul 18 · Miami</div>
+                  <Match teamA={sfL?(sfLt.find(t=>t!==sfL)||"TBD"):"TBD"} teamB={sfR?(sfRt.find(t=>t!==sfR)||"TBD"):"TBD"} winner={third} onPick={(t)=>setThird(prev=>prev===t?null:t)} right={false}/>
+                  {third && <div style={{marginTop:6,fontSize:11,color:"#cd7f32",fontFamily:"'Oswald',sans-serif"}}>{FLAGS[third]||"⚽"} {third} · 3°</div>}
+                </div>
+              </div>
+              <BracketHalf r32Seeds={INIT_R32.slice(8,16)} r32W={r32R} setR32W={(i,t)=>pick(r32R,setR32R,i,t,clr16R)}
+                r16In={r16In_R} r16W={r16R} setR16W={(i,t)=>pick(r16R,setR16R,i,t,clrQFR)}
+                qfIn={qfIn_R} qfW={qfR} setQfW={(i,t)=>pick(qfR,setQfR,i,t,clrSFR)}
+                sfIn={sfRt} sfW={sfR} setSfW={(t)=>{setSfR(prev=>prev===t?null:t);clrFin();}}
+                r32Labels={R32_LABELS_R} r16Labels={R16_LABELS_R} qfLabels={QF_LABELS_R}
+                sfLabel="Semi · Jul 15 · Atlanta" right={true}/>
+            </div>
+          </div>
+          <div style={{textAlign:"center",fontSize:9,color:"#0d1a2a",marginTop:24,letterSpacing:1}}>Clique nos times para avançar no chaveamento</div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
