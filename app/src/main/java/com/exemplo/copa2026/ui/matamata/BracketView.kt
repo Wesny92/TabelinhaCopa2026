@@ -48,8 +48,11 @@ private fun buildInlineHtml(ctx: android.content.Context, todasFases: Map<String
     val babelJs = readAsset(ctx, "babel.min.js")
     var html = readAsset(ctx, "bracket.html")
 
-    // Build INIT_R32 from actual database data
-    val r32 = (todasFases["R32"] ?: emptyList()).sortedBy { it.partida.numeroJogo }
+    // Build INIT_R32 from actual database data, reordered for correct bracket visual pairing
+    val ordemBracket = listOf(102, 105, 101, 103, 111, 112, 109, 110,
+                               104, 106, 107, 108, 114, 116, 113, 115)
+    val r32Map = (todasFases["R32"] ?: emptyList()).associateBy { it.partida.id }
+    val r32 = ordemBracket.mapNotNull { r32Map[it] }
     val r32Items = (0 until 16).map { i ->
         val c = r32.getOrNull(i)
         val casa = c?.timeCasa?.nome ?: "TBD"
